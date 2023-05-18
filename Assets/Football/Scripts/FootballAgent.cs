@@ -1,4 +1,4 @@
-﻿using MLAgents;
+﻿using Unity.MLAgents;
 using UnityEngine;
 
 namespace TableFootball
@@ -10,7 +10,9 @@ namespace TableFootball
         public int GameCount { get; private set; }
         // NOTE: Change AgentParameters struct and agentParameters field
         // from internal to protected in Agent class line 124ff.
-        public float Progress => GetStepCount() / (float)agentParameters.maxStep;
+        //public float Progress => GetStepCount() / (float)agentParameters.maxStep;
+
+        public float Progress = 0;
 
         [SerializeField]
         Team agentTeam;
@@ -44,7 +46,7 @@ namespace TableFootball
         float maxSpinPenalty = 0.01f;
         bool useSpinPenalty;
 
-        public override void InitializeAgent()
+        public void InitializeAgent()
         {
             ID = gameObject.GetInstanceID();
             Stats = new AgentStats(agentTeam.transform.name);
@@ -57,7 +59,7 @@ namespace TableFootball
             useSpinPenalty = maxSpinPenalty > 0;
         }
 
-        public override void AgentReset()
+        public void AgentReset()
         {
             GameCount++;
             agentTeam.ReSet();
@@ -66,14 +68,15 @@ namespace TableFootball
         }
 
         // N = 8
-        public override void AgentAction(float[] vectorAction)
+        public void AgentAction(float[] vectorAction)
         {
             agentTeam.StepUpdate(vectorAction);
         }
 
         // N = 58 - 2D obs
         // N = 60 - 3D obs
-        public override void CollectObservations()
+        /*
+        public void CollectObservations()
         {
             if (use2DBallObs)
             {
@@ -116,6 +119,7 @@ namespace TableFootball
                 AddSpinPenalty(spinSum);
             }
         }
+        */
 
         void AddShotReward()
         {
@@ -142,6 +146,7 @@ namespace TableFootball
             AddReward(-penalty);
         }
 
+
         void OnAutoKick(object sender, BallEvent e)
         {
             Stats.OnAutoKick();
@@ -160,7 +165,7 @@ namespace TableFootball
         {
             bool hasScored = e.Object == opponentTeam.Goal;
             Stats.OnGoal(hasScored);
-            AddReward(hasScored ? goalScoredReward : -goalConcededPenalty);
+            //AddReward(hasScored ? goalScoredReward : -goalConcededPenalty);
 
             if (hasScored)
             {
