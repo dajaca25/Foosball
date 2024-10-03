@@ -12,9 +12,9 @@
     "ReductionInfo": null,
     "ConditionInfo": null,
     "FloatBoundsInfo": {
-        "lowBounds": 0
+        "lowBounds": 0,
         "highBounds": 1.0,
-        "reverse":false
+        "reverse":false,
         "useExtents": false
     },
     "Vector2BoundsInfo": null,

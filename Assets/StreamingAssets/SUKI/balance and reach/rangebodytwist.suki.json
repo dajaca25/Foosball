@@ -13,7 +13,7 @@
     "FloatBoundsInfo": {
         "lowBounds": -50,
         "highBounds": 50,
-        "reverse": false
+        "reverse": false,
         "useExtents": true
     },
     "Vector2BoundsInfo": null,

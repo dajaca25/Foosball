@@ -81,14 +81,14 @@ public class Ball2 : MonoBehaviour
             ss.Shake();
             if(transform.position.z < 0)
             {
-                Instantiate(redScored, transform.position + (transform.up * 0.1f), new Quaternion(0, 0, 0, 0));
+                Instantiate(redScored, transform.position + (transform.up * 0.1f), Quaternion.Euler(0, 0, 0));
                 print("score for red!");
                 redScoreVal += 1;
                 camRotation.redScore.text = redScoreVal.ToString();
             }
             else
             {
-                Instantiate(blueScored, transform.position + (transform.up * 0.1f), new Quaternion(0,0,0,0));
+                Instantiate(blueScored, transform.position + (transform.up * 0.1f), Quaternion.Euler(0, 180, 0));
                 print("score for blue!");
                 blueScoreVal += 1;
                 camRotation.blueScore.text = blueScoreVal.ToString();

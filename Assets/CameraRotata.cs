@@ -19,7 +19,7 @@ public class CameraRotata : MonoBehaviour
         realRotaiton = Mathf.Lerp(realRotaiton, -newRotation, Time.deltaTime);
         realPosition = Mathf.Lerp(realPosition, newRotation / 40, 5 * Time.deltaTime);
 
-        transform.eulerAngles = new Vector3 (0, realRotaiton, 0);
+        transform.localRotation = Quaternion.Euler(0, realRotaiton, 0);
         transform.position = new Vector3(0, 0, realPosition);
     }
 }

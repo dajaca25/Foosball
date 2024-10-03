@@ -974,7 +974,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &792348954
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1232,7 +1232,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 3135245765017258831, guid: 83fc89d0d7f1c44489a6a836e11711ab,
+  m_Sprite: {fileID: -6670539388857336306, guid: 83fc89d0d7f1c44489a6a836e11711ab,
     type: 3}
   m_Type: 0
   m_PreserveAspect: 0
@@ -27879,6 +27879,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: QRCodeOutput
+      objectReference: {fileID: 0}
+    - target: {fileID: 3796129046937145059, guid: 42096ab9e53a987418e7d2dc883ed7f8,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 42096ab9e53a987418e7d2dc883ed7f8, type: 3}

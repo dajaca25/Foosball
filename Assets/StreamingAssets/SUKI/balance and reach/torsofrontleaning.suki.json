@@ -15,8 +15,8 @@
     "ConditionInfo": null,
     "FloatBoundsInfo": {
         "lowBounds": -0.15,
-        "highBounds": 0.2
-        "reverse":false
+        "highBounds": 0.2,
+        "reverse": false,
         "useExtents": true
     },
     "Vector2BoundsInfo": null,

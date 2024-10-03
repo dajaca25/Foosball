@@ -17,7 +17,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 792348953, guid: f95b7e443a541974fb988398e4ed982c, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 792348954, guid: f95b7e443a541974fb988398e4ed982c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -50,7 +50,7 @@ PrefabInstance:
     - target: {fileID: 1059217685, guid: f95b7e443a541974fb988398e4ed982c, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 3135245765017258831, guid: 83fc89d0d7f1c44489a6a836e11711ab,
+      objectReference: {fileID: -6670539388857336306, guid: 83fc89d0d7f1c44489a6a836e11711ab,
         type: 3}
     - target: {fileID: 335033215614913457, guid: f95b7e443a541974fb988398e4ed982c,
         type: 3}
@@ -221,11 +221,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 115
-      objectReference: {fileID: 0}
-    - target: {fileID: 4634946601928451021, guid: f95b7e443a541974fb988398e4ed982c,
-        type: 3}
-      propertyPath: m_fontAsset
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4634946601928451021, guid: f95b7e443a541974fb988398e4ed982c,
         type: 3}

@@ -17,7 +17,7 @@
     "FloatBoundsInfo": {
         "lowBounds": -0.3,
         "highBounds": 0.5,
-        "reverse":true
+        "reverse": false,
         "useExtents": true
 
     },
