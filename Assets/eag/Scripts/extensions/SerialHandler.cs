@@ -1,28 +1,15 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using System;
-using System.IO;
-using System.IO.Ports;
-
+using System.Linq;
+using System.Collections.Generic;
+using SerialPortUtility;
 using Enablegames;
+using Enablegames.Suki;
 
 public class SerialHandler : MonoBehaviour
 {
-    public enum Phase
-    {
-        calibration,
-        request,
-        active
-    }
-    public int readTimeout = 10;  //Timeout in milliseconds
-    private Phase currentPhase;
     public bool fakeData = true;
-    // set up serial port
-    string TheraDriveState;
-    string[] TheraDriveArray = new string[17];
-    SerialPort serialPort;
     public SkeletonData skeletonData;
     public RoboticData roboticData; ///Biometric data from separate communication 
     public RoboticDatum roboticDatum; ///Biometric data from separate communication 
@@ -31,69 +18,122 @@ public class SerialHandler : MonoBehaviour
 
     ///Biometric data from separate communication
     public int forceLevel;
+
+    private float _setPointPercentage;
     public int setPoint;
-    float heartrate;
+    int heartrate;
     float galvanicSkin;
     float robotAngle;
     float pinchAngle;
     public static float baselineGSR;
     public static int baselineHR;
 
+    public egString sukiType
+    {
+        get
+        {
+            return _sukiType;
+        }
+        set
+        {
+            _sukiType = value;
+            if (value == "R1Vertical.suki")
+            {
+                controlMode = 2;
+            }
+            else if (value == "R1Horizontal.suki")
+            {
+                controlMode = 5;
+            }
+            else if (value == "R1P&B.suki")
+            {
+
+                controlMode = 8;
+            }
+        }
+    }
+    private egString _sukiType = "R1Vertical.suki";
+
     // General Variables/
 
     int theta1 = 0;
     int force1 = 0;
-    int button1raw = 0;
-    bool button1 = false;
-    int analogX1 = 0;
-    int analogY1 = 0;
-    bool analogB1 = false;
+    int button1 = 0;
+    int aX1 = 0;
+    int aY1 = 0;
+    int aZ1 = 0;
+    int aZ2 = 0;
+    bool aB1 = false;
     int GSR1 = new int();
     int BVP1 = new int();
+    private int theta2 = 0;
 
-    int theta2 = 0;
-    int force2 = 0;
-    bool button2 = false;
-    int analogX2 = 0;
-    int analogY2 = 0;
-    bool analogB2 = false;
-    int GSR2 = new int();
-    int BVP2 = new int();
-
-    private bool initialized = false;
     public static string userid = "unknownID";
 
     private bool gameEnded = false;
 
-    egInt controlMode = 3;
+    private egBool flipNeed = false;
 
-    private bool flipState = false;
+    private SerialPortUtilityPro serialPort;
+    private List<string> TheraDriveArray;
 
-    [SerializeField, Tooltip("If the input needs to flipped for left-handed-ness.")]
-    private bool flipNeed = false;
+    private bool initialized = false;
 
-    public bool closeSerialPortAfterEachFrame = false;
+    private int _setPoint;
+    private int controlMode;
+    private int _controlMode;
+    private int _forceLvl;
+    private int offset = 0;
+
 
 
     void Awake()
     {
-        VariableHandler.Instance.Register(ParameterStrings.CONTROL_MODE, controlMode);
-//    }
+        StartCoroutine(WaitForVar());
+
+        if (sukiType == "R1Vertical.suki")
+        {
+            controlMode = 2;
+        }
+        else if (sukiType == "R1Horizontal.suki")
+        {
+            controlMode = 5;
+        }
+        else if (sukiType == "R1P&B.suki")
+        {
+            controlMode = 8;
+        }
 
         userid = PlayerPrefs.GetString("lastUsedUserName");
 
-        if (flipNeed && String.Equals(userid[userid.Length - 1].ToString(), "L"))
+        TheraDriveArray = new List<string>();
+
+        serialPort = GetComponent<SerialPortUtilityPro>();
+
+        if (fakeData)
         {
-            flipState = true;
+            serialPort.enabled = false;
+            return;
         }
-        else
+
+        egString motionTrackingCategory = "";
+        VariableHandler.Instance.Register(ParameterStrings.SUKI_TYPE, motionTrackingCategory);
+        Debug.Log("Log Suki Type: " + motionTrackingCategory);
+        if (!((string)motionTrackingCategory).ToLower().Contains("robo"))
         {
-            flipState = false;
+            gameObject.SetActive(false);
         }
     }
 
-    void Start()
+    private void Start()
     {
+        StartCoroutine(FPS());
+        if (!fakeData)
+        {
+            serialPort.ReadCompleteEventObject.RemoveAllListeners();
+            serialPort.ReadCompleteEventObject.AddListener(ReadSerialInput);
+        }
+
 
         if (skeletonData == null)
         {
@@ -108,7 +148,7 @@ public class SerialHandler : MonoBehaviour
         }
         if (roboticData == null)
             roboticData = new RoboticData();
- //       if (roboticData.data.Count <= 1)
+        //       if (roboticData.data.Count <= 1)
         {
             print("SerialHandler:SET RD");
             roboticDatum = new RoboticDatum();
@@ -126,7 +166,7 @@ public class SerialHandler : MonoBehaviour
 
         if (biometricData == null)
             biometricData = new BiometricData();
- //       if (biometricData.data.Count <= 1)
+        //       if (biometricData.data.Count <= 1)
         {
             biometricDatum = new BiometricDatum();
             biometricDatum.Value = 0f;
@@ -141,215 +181,148 @@ public class SerialHandler : MonoBehaviour
             skeletonData.roboticData = roboticData;
             skeletonData.biometricData = biometricData;
         }
-
-        //Start Serial Port
-        serialPort = null;//new SerialPort("/dev/cu.usbmodem146101", 115200, Parity.None, 8, StopBits.One);
-        if (!fakeData)
-        {
-            print(fakeData);
-            serialPort = new SerialPort("COM3", 115200, Parity.None, 8, StopBits.One);
-        }else{
-            initialized = true;
-        }
-
-
-        //        serialPort = new SerialPort("/dev/cu.Bluetooth-Incoming-Port", 115200, Parity.None, 8, StopBits.One);
-        if (serialPort != null)
-            serialPort.Open();
-
-        StartCoroutine(StartRequestingPhase());
     }
 
-    public void StartCalibration()
+    private bool IsSerialPortValid()
     {
-        currentPhase = Phase.calibration;
+        return serialPort && serialPort.enabled && serialPort.IsConnected() && serialPort.IsOpened();
     }
 
-    public void StartWriting()
+
+    IEnumerator WaitForVar()
     {
-        currentPhase = Phase.active;
-    }
-
-    public void StartRequesting()
-    {
-        currentPhase = Phase.request;
-    }
-
-    void OpenSerialData()
-    {
-
-        if (serialPort == null)
-            return;
-        // Open the port (it's usually closed going in)
-        if (!serialPort.IsOpen)
+        if (egInitialized())
         {
-            serialPort.Open();
-        }
-
-        if (initialized && gameEnded)
-        {
-            serialPort.Write("e" + "," + userid + "," + DateTime.UtcNow + "," + "\n");
-            if (serialPort.IsOpen)
-            {
-                serialPort.Close();
-            }
-            return;
-        }
-        serialPort.ReadTimeout = readTimeout;  //10ms = 100 FPS
-    }
-    bool _continue = true;
-
-    //read as much data as there is and returns when no data (after timeout at the latest)
-    void ReadSerialData()
-    {
-        while (_continue)
-        {
-            try
-            {
-             TheraDriveState = serialPort.ReadLine();
-             //Console.WriteLine(message);
-            }
-            catch (TimeoutException) { 
-                return;
-            }
-         }
-    }
-
-    void ProcessSerialData()
-    {
-        TheraDriveArray = TheraDriveState.Split(',');
-
-        if (TheraDriveArray.Length == 16)
-        {
-            initialized = true;
-        }
-
-        if (initialized)
-        {
-            switch (currentPhase)
-            {
-                case Phase.active:
-                    /*
-                     * WORK IN PROGRESS CODE
-                     * Variable ID string: Check if data packet contains data labels
-                     * if (TheraDriveArray[0]=='ID')
-                     * {
-                     *      // TheraDriveArray contains comma separated strings to identify variables passed from Arduino
-                     *      // TheraDriveArray[1] contains the number of variables to follow
-                     * }
-                     * else //assign Thera Drive Variables below, as is default
-                    */
-
-                    //Assign Thera Drive Variables
-                    int.TryParse(TheraDriveArray[0].ToString(), out theta1);
-                    int.TryParse(TheraDriveArray[1].ToString(), out force1);
-                    int.TryParse(TheraDriveArray[2].ToString(), out button1raw);
-                    if (button1raw == 0)
-                    {
-                        button1 = true;
-                    }
-                    else
-                    {
-                        button1 = false;
-                    }
-
-                    int.TryParse(TheraDriveArray[3].ToString(), out analogX1);
-                    int.TryParse(TheraDriveArray[4].ToString(), out analogY1);
-                    bool.TryParse(TheraDriveArray[5].ToString(), out analogB1);
-                    int.TryParse(TheraDriveArray[6].ToString(), out GSR1);
-                    int.TryParse(TheraDriveArray[7].ToString(), out BVP1);
-
-
-                    int.TryParse(TheraDriveArray[8].ToString(), out theta2);
-                    int.TryParse(TheraDriveArray[9].ToString(), out force2);
-                    bool.TryParse(TheraDriveArray[10].ToString(), out button2);
-                    int.TryParse(TheraDriveArray[11].ToString(), out analogX2);
-                    int.TryParse(TheraDriveArray[12].ToString(), out analogY2);
-                    bool.TryParse(TheraDriveArray[13].ToString(), out analogB2);
-                    int.TryParse(TheraDriveArray[14].ToString(), out GSR2);
-                    int.TryParse(TheraDriveArray[15].ToString(), out BVP2);
-
-                    /*
-                     * WORK IN PROGRESS CODE
-                     * Serial write to robot
-                     * current syntax:
-                     * outputs 1-3 are for the base robot 
-                     * output 0 is for initialization state
-                     * output 1 is for desired angle or other data point output to controller: three digits 
-                     * output 2 is for controller magnitude/gain: two digits,  0 to 8 to scale resistance/assistance
-                     * output 3 is controller mode: single digit, 0 for zero impedance, 1 for basic angular assist, 2 for basic angular resist, 3 for dynamic resistance
-                     * 
-                     * outputs 4-6 are for an accessory or handle with similar syntax to the Thera Drive
-                     * output 4 is controller mode for accessory: single digit
-                     * output 5 is controller magnitude/gain for accesory: two digits 0 to 99
-                     * output 6 is for desired angle or other data point: two or three digits
-                     */
-
-                    serialPort.Write("a" + "," + Convert.ToString(setPoint) + "," + Convert.ToString(forceLevel) + "," + controlMode + "\n");
-                    Debug.Log("force:" + forceLevel);
-                    break;
-                case Phase.request:
-                    /*
-                     * WORK IN PROGRESS CODE
-                     * Variable ID string: Check if data packet contains data labels
-                     * if (TheraDriveArray[0]=='ID')
-                     * {
-                     *      // TheraDriveArray contains comma separated strings to identify variables passed from Arduino
-                     *      // TheraDriveArray[1] contains the number of variables to follow
-                     * }
-                     * else //assign Thera Drive Variables below, as is default
-                    */
-
-                    //Assign Thera Drive Variables
-                    int.TryParse(TheraDriveArray[0].ToString(), out theta1);
-                    int.TryParse(TheraDriveArray[1].ToString(), out force1);
-                    int.TryParse(TheraDriveArray[2].ToString(), out button1raw);
-                    if (button1raw == 0)
-                    {
-                        button1 = true;
-                    }
-                    else
-                    {
-                        button1 = false;
-                    }
-
-                    int.TryParse(TheraDriveArray[3].ToString(), out analogX1);
-                    int.TryParse(TheraDriveArray[4].ToString(), out analogY1);
-                    bool.TryParse(TheraDriveArray[5].ToString(), out analogB1);
-                    float.TryParse(TheraDriveArray[6].ToString(), out baselineGSR);
-                    baselineGSR = baselineGSR / 3;
-                    int.TryParse(TheraDriveArray[7].ToString(), out baselineHR);
-
-
-                    int.TryParse(TheraDriveArray[8].ToString(), out theta2);
-                    int.TryParse(TheraDriveArray[9].ToString(), out force2);
-                    bool.TryParse(TheraDriveArray[10].ToString(), out button2);
-                    int.TryParse(TheraDriveArray[11].ToString(), out analogX2);
-                    int.TryParse(TheraDriveArray[12].ToString(), out analogY2);
-                    bool.TryParse(TheraDriveArray[13].ToString(), out analogB2);
-                    int.TryParse(TheraDriveArray[14].ToString(), out GSR2);
-                    int.TryParse(TheraDriveArray[15].ToString(), out BVP2);
-
-                    serialPort.Write("r" + "," + Convert.ToString(setPoint) + "," + Convert.ToString(forceLevel) + "," + controlMode + "\n");
-
-                    break;
-                case Phase.calibration:
-                    serialPort.Write("c" + "," + userid + "," + DateTime.Now + ":" + DateTime.Now.Millisecond + "," + Application.productName + "\n");
-                    break;
-            }
-
-
+            VariableHandler.Instance.Register(ParameterStrings.REVERSE_INPUT, flipNeed);
+            VariableHandler.Instance.Register(ParameterStrings.SUKI_TYPE, _sukiType);
+            print("variables set up: flipNeed, _sukiType");
+            yield return new WaitForSeconds(0);
         }
         else
         {
-            serialPort.Write("s" + "," + userid + "," + DateTime.Now + ":" + DateTime.Now.Millisecond + "," + Application.productName + "\n");
+            yield return new WaitForSeconds(1);
+            StartCoroutine(WaitForVar());
         }
     }
-    void CloseSerialData()
-    {
-        //Close port and reopen on next read
 
-        if (serialPort.IsOpen && closeSerialPortAfterEachFrame)
+
+    bool egStarted = false;
+
+    bool egInitialized()
+    {
+        if (egStarted)
+            return true;
+        print("egInitialized: " + egStarted);
+        if (ParameterHandler.Instance == null)
+            return false;
+        GameParameters gp = (GameParameters)ParameterHandler.Instance.AllParameters[0];
+        if (gp == null || gp.initialized == false)
+            return false;
+        if (SukiInput.Instance == null)
+            return false;
+        if (SukiInput.Instance.Skeleton == null)
+            return false;
+        egStarted = true;
+
+        return true;
+    }
+
+
+
+    public void ReadSerialInput(object obj)
+    {
+        string[] array = ((string)obj).Split(',');
+
+        if (array.Length == 0)
+        {
+            return;
+        }
+
+        TheraDriveArray = array.ToList();
+    }
+
+    private void ProcessSerialData()
+    {
+        if (TheraDriveArray.Count != 10)
+        {
+            if (IsSerialPortValid() && !initialized)
+            {
+                try
+                {
+                    _ = serialPort.WriteLF("s" + "," + userid + "," + DateTime.Now + ":" + DateTime.Now.Millisecond + "," + Application.productName);
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+            return;
+        }
+
+        initialized = true;
+
+        /*
+ * WORK IN PROGRESS CODE
+ * Variable ID string: Check if data packet contains data labels
+ * if (TheraDriveArray[0]=='ID')
+ * {
+ *      // TheraDriveArray contains comma separated strings to identify variables passed from Arduino
+ *      // TheraDriveArray[1] contains the number of variables to follow
+ * }
+ * else //assign Thera Drive Variables below, as is default
+*/
+
+        //Assign Thera Drive Variables
+        int.TryParse(TheraDriveArray[0].ToString(), out theta1);
+        int.TryParse(TheraDriveArray[1].ToString(), out force1);
+        int.TryParse(TheraDriveArray[2].ToString(), out button1);
+        int.TryParse(TheraDriveArray[3].ToString(), out aX1);
+        int.TryParse(TheraDriveArray[4].ToString(), out aY1);
+        int.TryParse(TheraDriveArray[5].ToString(), out aZ1);
+        int.TryParse(TheraDriveArray[6].ToString(), out aZ2);
+        float.TryParse(TheraDriveArray[7].ToString(), out galvanicSkin);
+        int.TryParse(TheraDriveArray[8].ToString(), out heartrate);
+
+        /*
+        * WORK IN PROGRESS CODE
+        * Serial write to robot
+        * current syntax:
+        * outputs 1-3 are for the base robot 
+        * output 0 is for initialization state
+        * output 1 is for desired angle or other data point output to controller: three digits 
+        * output 2 is for controller magnitude/gain: two digits,  0 to 8 to scale resistance/assistance
+        * output 3 is controller mode: single digit, 0 for zero impedance, 1 for basic angular assist, 2 for basic angular resist, 3 for dynamic resistance
+        * 
+        * outputs 4-6 are for an accessory or handle with similar syntax to the Thera Drive
+        * output 4 is controller mode for accessory: single digit
+        * output 5 is controller magnitude/gain for accesory: two digits 0 to 99
+        * output 6 is for desired angle or other data point: two or three digits
+        */
+
+
+        if ((setPoint != _setPoint || forceLevel != _forceLvl || controlMode != _controlMode) && IsSerialPortValid())
+        {
+            try
+            {
+                if (serialPort.WriteLF("a" + "," + Convert.ToString(setPoint) + "," + Convert.ToString(forceLevel) + "," + controlMode.ToString()))
+                {
+                    _setPoint = setPoint;
+                    _forceLvl = forceLevel;
+                    _controlMode = controlMode;
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        TheraDriveArray.Clear();
+    }
+
+    private void OnDestroy()
+    {
+        if (!fakeData && IsSerialPortValid())
         {
             serialPort.Close();
         }
@@ -363,8 +336,8 @@ public class SerialHandler : MonoBehaviour
         }
         else
         {
-            robotAngle = (theta1 - 135);
-            if (flipState)
+            robotAngle = (theta1 - offset);
+            if (flipNeed)
             {
                 robotAngle = -robotAngle;
             }
@@ -375,7 +348,6 @@ public class SerialHandler : MonoBehaviour
             robotAngle = -robotAngle;
         }*/
         pinchAngle = theta2;
-        print("R1=" + robotAngle);
     }
 
     void CalculateHeartrate()
@@ -385,102 +357,114 @@ public class SerialHandler : MonoBehaviour
 
     void CalculateGSR()
     {
-        galvanicSkin = GSR1 / 3;
+        galvanicSkin = GSR1;
     }
 
-    void FixedUpdate()
-    {
-        if (fakeData)
-            return;
-            
-            OpenSerialData();
-            ReadSerialData();
-            ProcessSerialData();
-            CloseSerialData();
-    }
-
-    // Update is called once per frame
     void Update()
     {
-
-
+        if (skeletonData == null)
         {
-            if (skeletonData == null)
+            GameObject go = GameObject.Find("Tracking Avatar");
+            if (go != null)
+                skeletonData = go.GetComponentInChildren<SkeletonData>();
+            if (skeletonData != null && skeletonData.roboticData != null)
             {
-                GameObject go = GameObject.Find("Tracking Avatar");
-                if (go != null)
-                    skeletonData = go.GetComponentInChildren<SkeletonData>();
-                if (skeletonData != null && skeletonData.roboticData != null)
-                {
-                    roboticData = skeletonData.roboticData;
-                }
-                if (skeletonData != null && skeletonData.biometricData != null)
-                {
-                    biometricData = skeletonData.biometricData;
-                }
+                roboticData = skeletonData.roboticData;
             }
-            if (skeletonData != null)
+            if (skeletonData != null && skeletonData.biometricData != null)
             {
-                skeletonData.roboticData = roboticData;
-                skeletonData.biometricData = biometricData;
+                biometricData = skeletonData.biometricData;
             }
+        }
+        if (skeletonData != null)
+        {
+            skeletonData.roboticData = roboticData;
+            skeletonData.biometricData = biometricData;
+        }
 
-
-            if (!initialized || gameEnded)
+        if (gameEnded)
+        {
+            if (TheraDriveArray.Count == 10 && IsSerialPortValid())
             {
+                try
+                {
+                    _ = serialPort.WriteLF("e" + "," + userid + "," + DateTime.Now + ":" + DateTime.Now.Millisecond + "," + Application.productName);
+                }
+                catch (Exception)
+                {
+
+                }
                 return;
             }
-
-            CalculateHeartrate();
-            CalculateRobotAngle();
-            print("SH:Up: R1= " + robotAngle);
-            roboticData.SetData("R1", robotAngle, Time.time);
-            roboticData.SetData("B1", button1raw, Time.time);
-            roboticData.SetData("R2", pinchAngle, Time.time);
-            biometricData.SetData("HR", heartrate, Time.time);
-            biometricData.SetData("GSR", galvanicSkin, Time.time);
-
-            Debug.Log("GSR: " + GSR1);
-
-
-            if (Input.GetKeyDown(KeyCode.E) && initialized && !gameEnded)
-            {
-                GameEnded();
-            }
-        }
-    }
-
-    void OnDestroy()
-    {
-        if (fakeData)
             return;
-        Debug.Log("Port Closed");
-        if (!serialPort.IsOpen)
-        {
-            serialPort.Open();
-        }
-        serialPort.Write("e" + "," + userid + "," + DateTime.UtcNow + "," + "\n");
-        if (serialPort.IsOpen)
-        {
-            serialPort.Close();
         }
 
+        if (!fakeData)
+        {
+            ProcessSerialData();
+        }
+
+        //CalculateHeartrate();
+        CalculateRobotAngle();
+        roboticData.SetData("R1", robotAngle, Time.time);
+        roboticData.SetData("B1", button1, Time.time);
+        roboticData.SetData("R2", pinchAngle, Time.time);
+        biometricData.SetData("HR", heartrate, Time.time);
+        biometricData.SetData("GSR", galvanicSkin, Time.time);
+
+        if (Input.GetKeyDown(KeyCode.E) && !gameEnded)
+        {
+            GameEnded();
+        }
+        if (/*debugKey.triggered ||*/ Input.GetKeyDown(KeyCode.BackQuote))
+        {
+            drawGUI = !drawGUI;
+        }
     }
+
     public void GameEnded()
     {
+        initialized = false;
+        TheraDriveArray = new List<string>();
         gameEnded = true;
     }
 
     public void Restart()
     {
         gameEnded = false;
-        initialized = false;
     }
 
-    IEnumerator StartRequestingPhase()
+    public void ZeroController()
     {
-        StartRequesting();
-        yield return new WaitForSeconds(1);
-        StartWriting();
+        offset = (int)theta1;
+    }
+
+    public bool drawGUI = false;
+    public int offsetX = 5;
+    public int offsetY = 150;
+    public int width = 500, height = 400;
+    //public InputAction debugKey;
+    private SerialHandler _serialHandler;
+    private float count;
+
+    private void OnGUI()
+    {
+        if (this.drawGUI)
+            this.Display(new Rect(offsetX, offsetY, width, height));
+    }
+
+    void Display(Rect displayRect)
+    {
+        GUILayout.BeginArea(displayRect);
+        GUILayout.Label(string.Format("FPS: {0}, Suki is updating: {1}, R1: {2}, B1: {3}, HR: {4}, GSR: {5}", Math.Ceiling(count), SukiInput.Instance.Updating, robotAngle, button1, heartrate, galvanicSkin));
+    }
+
+    private IEnumerator FPS()
+    {
+        while (true)
+        {
+            count = 1f / Time.unscaledDeltaTime;
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 }

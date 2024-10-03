@@ -22,7 +22,7 @@ namespace Suki
 
         void Awake()
         {
-            Debug.Log("SEPOSM:Awake");
+            Debug.Log("SEWA:Awake");
             extentsProto = new SukiPOSMExtents();
             extentsProto.InitialPrameters(initialRange, timeBased, tolarence, adjustmentParameterEasier, adjustmentParameterHarder);
             SukiSchemaExtents.SetExtentsHandler(extentsProto);           
@@ -45,7 +45,7 @@ namespace Suki
         public bool timeBase = false;
 
         private Dictionary<float, float> _limits = new Dictionary<float, float>();
-        private float suggestLevel = -1;
+        private float suggestLevel;
         private float rangeAdjustTime = 5f;
         private int rangeAdjustInputNum = 10;
         private string _id;
@@ -75,9 +75,7 @@ namespace Suki
 
         public void SetInitialValue(float value)
         {
-            Debug.Log("SetInit:Add SuggestLevel = "+ value);
             _limits.Add(value, 1f);
-            UpdateSuggestLevel();
         }
 
         public float SuggestLevel
@@ -111,7 +109,7 @@ namespace Suki
                     }
                 }
 
-                if (newLevelVector <= Math.Min(a, b))
+                if (newLevelVector < Math.Min(a, b))
                 {
                     newLevel = limit.Key;
                     newLevelVector = Math.Min(a, b);
@@ -119,12 +117,10 @@ namespace Suki
             }
 
             suggestLevel = newLevel;
-            Debug.Log("Updating suggestLevel = " + suggestLevel);
             foreach (float key in _limits.Keys.ToList())
             {
                 if (key > suggestLevel + range || key < suggestLevel - range)
                 {
-                    Debug.Log("suggestlevel removing key "+ key);
                     _limits.Remove(key);
                 }
             }
@@ -157,16 +153,13 @@ namespace Suki
                 }
                 if (observation > suggestLevel + tolarence)
                 {
-                    Debug.Log("o > SuggestLevel = "+ suggestLevel);
                     float initialVector = _limits[suggestLevel];
                     for (float l = suggestLevel + 2 * tolarence; l <= suggestLevel + range; l += 2 * tolarence)
                     {
-                        Debug.Log("In loop 1");
                         if (l + tolarence <= observation)
                         {
                             if (!_limits.ContainsKey(l))
                             {
-                                Debug.Log("Add SuggestLevel = "+ l);
                                 _limits.Add(l, initialVector);
                             }
                             else
@@ -188,12 +181,9 @@ namespace Suki
 
                 if (observation < suggestLevel - tolarence)
                 {
-                    Debug.Log("o < SuggestLevel = "+ suggestLevel);
-
                     float initialVector = _limits[suggestLevel];
                     for (float l = suggestLevel - 2 * tolarence; l >= suggestLevel - range; l -= 2 * tolarence)
                     {
-                        Debug.Log("In loop 2");
                         if (l - tolarence >= observation)
                         {
                             if (!_limits.ContainsKey(l))
@@ -280,7 +270,6 @@ namespace Suki
     {
         public SukiPOSMExtents()
         {
-            Debug.Log("SEPOSM:Constructor");
         }
         public override SukiExtents Create()
         {
@@ -326,7 +315,7 @@ namespace Suki
         // updates the min/max extents if the value lies outside the previously observed extents
         public override void UpdateExtents(float value)
         {
-            Debug.Log("SEPOSM.UpdateExtents : " + value);
+            Debug.Log("SEPOSM:UpdateExtents: " + value);
             // do nothing if we have not yet received a response from server
             if (!extentsQueried)
             {
@@ -358,7 +347,7 @@ namespace Suki
                 }
                 else if(_lastChangeX > changeTolarence && newChange <= changeTolarence )
                 {
-                    _maxExtentsXValue.UpdateBeliefVector(value);
+                    _minExtentsYValue.UpdateBeliefVector(value);
                     maxExtent = _maxExtentsXValue.SuggestLevel;
                 }
 

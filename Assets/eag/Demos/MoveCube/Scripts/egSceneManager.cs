@@ -9,6 +9,9 @@ public class egSceneManager : MonoBehaviour
 
     public static UnityEvent OnSceneChange = new UnityEvent();
 	public string GameSceneName  = "eag_MoveCubeGame";
+    public int layoutInt;
+    public int layoutInt2;
+    public int layoutInt3;
 
     private static egSceneManager instance;
     public static egSceneManager Instance
@@ -55,6 +58,11 @@ public class egSceneManager : MonoBehaviour
 			print ("Missing game scene name to load.");
     }
 
+    public void SetSceneName(string name)
+    {
+        GameSceneName = name;
+    }
+
     public void LoadScene(string name)
     {
         Raise(OnSceneChange);
@@ -74,5 +82,20 @@ public class egSceneManager : MonoBehaviour
     public void Quit()
     {
         Application.Quit();
+    }
+
+    public void setLayoutFloat(float newLayout)
+    {
+        layoutInt = Mathf.FloorToInt(newLayout);
+    }
+
+    public void setLayout2Float(float newLayout)
+    {
+        layoutInt2 = Mathf.FloorToInt(newLayout);
+    }
+
+    public void setLayout3Float(float newLayout)
+    {
+        layoutInt3 = Mathf.FloorToInt(newLayout);
     }
 }

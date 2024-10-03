@@ -32,6 +32,7 @@ TagManager:
   - Goal
   - Table
   - Field
+  - Tracking Avatar
   layers:
   - Default
   - TransparentFX
@@ -53,7 +54,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - BodyTrack
   - 
   - 
   - 

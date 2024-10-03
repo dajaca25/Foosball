@@ -8,10 +8,12 @@ public class PlayerRodScript : MonoBehaviour
 
     [SerializeField] string inputAxis;
     [SerializeField] string inputButton;
-    
+
+    public float adjustment;
+
     void FixedUpdate()
     {
-        float adjustment = Input.GetAxis(inputAxis) * speed;
+        adjustment = (Input.GetAxis(inputAxis)) * speed;
 
         if(Input.GetButton(inputButton))
         {

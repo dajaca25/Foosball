@@ -96,23 +96,23 @@ public class FooterMessage : EnableSerializableValue
         Player performances changes on each game
          */
 //        if (player != null)
-		{
-			//pointsSystem Scorer = player.GetComponent<pointsSystem>();
-			egGame Scorer = GameObject.Find ("GameLogic").GetComponent<egGame> (); //placeholder, change it with the scipt where the score is kept
-           
-			if (Scorer == null) {
-				score = 1; //Scorer.points; //zero score won't show footer info on web portal
-				playerPerformance = "Good"; // Resume the performace
-				gameLength = 1000;
-			} else {
-				gameLength = (int) Scorer.duration * 1000;
-				score = Scorer.score; //GameObject.Find ("GameOverPanel").GetComponent<GameOverPanel> ().score;
-				playerPerformance = ((score < 50) ? "Good" : "Great!"); // Resume the performace
-				GameObject gop = GameObject.Find ("GameOverPanel");
-				if (gop !=null)
-				playerNotes = gop.GetComponent<GameOverPanel> ().notes.text;
-			}
-		}
+		// {
+		// 	//pointsSystem Scorer = player.GetComponent<pointsSystem>();
+		// 	egGame Scorer = GameObject.Find ("GameLogic").GetComponent<egGame> (); //placeholder, change it with the scipt where the score is kept
+  //          
+		// 	if (Scorer == null) {
+		// 		score = 1; //Scorer.points; //zero score won't show footer info on web portal
+		// 		playerPerformance = "Good"; // Resume the performace
+		// 		gameLength = 1000;
+		// 	} else {
+		// 		gameLength = (int) Scorer.duration * 1000;
+		// 		score = Scorer.score; //GameObject.Find ("GameOverPanel").GetComponent<GameOverPanel> ().score;
+		// 		playerPerformance = ((score < 50) ? "Good" : "Great!"); // Resume the performace
+		// 		GameObject gop = GameObject.Find ("GameOverPanel");
+		// 		if (gop !=null)
+		// 		playerNotes = gop.GetComponent<GameOverPanel> ().notes.text;
+		// 	}
+		// }
 
 //        if (TimerObject != null)
 		{
@@ -193,7 +193,7 @@ public class TrackerFooter : TrackerComponent
 {
     // Use this for initialization
     FooterMessage fm;
-    void Awake()
+    void Start()
     {
 //        fm = new FooterMessage();
         TrackModuleOnEvent(new TrackerModule("Footer", FooterMessage));

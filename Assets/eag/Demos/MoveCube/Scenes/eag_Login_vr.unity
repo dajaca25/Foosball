@@ -227,7 +227,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 199930232}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -1531377792, guid: 6b3bff091e91e4460ab95bdb6dc9f7c7, type: 3}
+  m_Script: {fileID: 11500000, guid: f2cbfd0461b8dc94aa1f66845a7d635b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   toastTime: 2
@@ -503,7 +503,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1031799291}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -1140634893, guid: 6b3bff091e91e4460ab95bdb6dc9f7c7, type: 3}
+  m_Script: {fileID: 11500000, guid: 82c88b4287459cf42924343ea90c8321, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   addressInput: {fileID: 2146959646}

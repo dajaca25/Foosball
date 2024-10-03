@@ -9,7 +9,12 @@
 
 public class ParameterStrings
 {
-    public static string STARTING_SPEED = "Player Starting Speed";
+	public static string SUKI_TYPE = "Suki type";
+	public static string STARTING_SPEED = "Player Starting Speed";
 	public static string GRAVITY = "Gravity";
 	public static string CONTROL_MODE = "Control Mode";
+	public static string REVERSE_INPUT = "Right Hand Mode";
+	public static string USING_DDA = "Using DDA";
+	public static string DEFAULT_DIFFICULTY = "Default Difficulty";
+	public static string USING_BIO = "Using Bio";
 }

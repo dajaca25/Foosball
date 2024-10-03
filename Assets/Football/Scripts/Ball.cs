@@ -94,6 +94,7 @@ namespace TableFootball
             Invoke("AutoKick", 0.5f);
         }
 
+
         void AutoKick()
         {
             DispatchAutoKickEvent();
@@ -171,6 +172,9 @@ namespace TableFootball
 
         void OnTriggerEnter(Collider collider)
         {
+            if (collider.CompareTag("Player"))
+                rb.AddForce(collider.transform.forward * 10);
+
             if (collider.CompareTag(Tags.GOAL))
             {
                 DispatchGoalEvent(new BallEvent(collider.gameObject));

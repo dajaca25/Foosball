@@ -5,10 +5,10 @@ using Enablegames;
 
 public class Collectible : MonoBehaviour {
 
-	egGame game;
+	EGGameManager game;
 	// Use this for initialization
 	void Start () {
-		game = GameObject.Find ("GameLogic").GetComponent<egGame> ();
+		game = GameObject.Find ("GameLogic").GetComponent<EGGameManager> ();
 		enabled = true;
 	}
 
