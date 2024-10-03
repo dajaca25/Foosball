@@ -60,7 +60,7 @@ public class Ball2 : MonoBehaviour
                 //rb.velocity = rb.velocity * -0.5f;
                 rb.velocity = new Vector3 (-rb.velocity.x, 0, -rb.velocity.z);
             }
-            ss.Shake();
+            ss.Shake(0.01f, 0.1f);
         }
 
         if (collider.CompareTag("wall"))
@@ -78,7 +78,7 @@ public class Ball2 : MonoBehaviour
         if (collider.CompareTag("Goal"))
         {
             rb.velocity = new Vector3(0,0,0);
-            ss.Shake();
+            ss.Shake(0.1f, 0.5f);
             if(transform.position.z < 0)
             {
                 Instantiate(redScored, transform.position + (transform.up * 0.1f), Quaternion.Euler(0, 0, 0));

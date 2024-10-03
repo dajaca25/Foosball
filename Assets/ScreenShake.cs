@@ -4,26 +4,24 @@ using UnityEngine;
 public class ScreenShake : MonoBehaviour
 {
     public AnimationCurve curve;
-    public float duration = 1f;
 
-    public void Shake()
+    public void Shake(float intensity, float duration)
     {
-        StartCoroutine(Shaking());
+        StartCoroutine(Shaking(intensity, duration));
     }
 
-    IEnumerator Shaking()
+    IEnumerator Shaking(float intensity, float duration)
     {
-        Vector3 startPosition = transform.position;
+        //Vector3 startPosition = transform.position;
         float elapsedTime = 0;
 
         while(elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
-            float strength = curve.Evaluate(elapsedTime / duration);
-            transform.position = startPosition + Random.insideUnitSphere * strength;
+            float strength = curve.Evaluate(elapsedTime / duration) * intensity;
+            transform.position = transform.position + Random.insideUnitSphere * strength;
             yield return null;
         }
-
-        transform.position = startPosition;
+        //transform.position = startPosition;
     }
 }

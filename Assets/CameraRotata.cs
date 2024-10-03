@@ -13,9 +13,20 @@ public class CameraRotata : MonoBehaviour
     public TMP_Text blueScore;
     public TMP_Text redScore;
 
+    public Transform cam;
+
+    public bool keyboardTesting = false;
+
+
+    private void Start()
+    {
+        cam = transform.GetChild(0);
+    }
 
     void Update()
     {
+        cam.localPosition = new Vector3(0.55f, 1, 0);
+
         realRotaiton = Mathf.Lerp(realRotaiton, -newRotation, Time.deltaTime);
         realPosition = Mathf.Lerp(realPosition, newRotation / 40, 5 * Time.deltaTime);
 
