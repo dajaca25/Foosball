@@ -17,6 +17,7 @@ public class CameraRotata : MonoBehaviour
 
     public bool keyboardTesting = false;
 
+    public GameObject ballObject;
 
     private void Start()
     {
@@ -25,6 +26,9 @@ public class CameraRotata : MonoBehaviour
 
     void Update()
     {
+        if (!ballObject.activeSelf)
+            ballObject.SetActive(true);
+
         cam.localPosition = new Vector3(0.55f, 1, 0);
 
         realRotaiton = Mathf.Lerp(realRotaiton, -newRotation, Time.deltaTime);
