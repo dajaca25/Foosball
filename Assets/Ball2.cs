@@ -17,14 +17,10 @@ namespace Mirror
 
         public GameObject blueScored;
         public GameObject redScored;
-        public GameObject waitingScreen;
 
-
-        [SyncVar] bool isPanelOff;
 
         //[SyncVar]
         //public Vector3 ballPosition;
-
 
 
         void Start()
@@ -39,30 +35,29 @@ namespace Mirror
         {
             camRotation.newRotation = Mathf.Clamp(transform.position.z * 70, -12, 12);
 
-            if (isServer)
+            if (NetworkServer.active)
             {
-                //ballPosition = transform.position;
+                if (isServer)
+                {
+                    //ballPosition = transform.position;
 
-                if (rb.velocity.x < 0.1f)
-                {
-                    if (transform.position.x > 0)
+                    if (rb.velocity.x < 0.1f)
                     {
-                        rb.velocity += new Vector3(-0.001f, 0, 0);
-                    }
-                    else
-                    {
-                        rb.velocity += new Vector3(0.001f, 0, 0);
+                        if (transform.position.x > 0)
+                        {
+                            rb.velocity += new Vector3(-0.001f, 0, 0);
+                        }
+                        else
+                        {
+                            rb.velocity += new Vector3(0.001f, 0, 0);
+                        }
                     }
                 }
-            }
-            else if(Foosball_NetworkManager.Instance.isHost == false)
-            {
-                if (!isPanelOff && waitingScreen.activeSelf)
+                else /*if(Foosball_NetworkManager.Instance.isHost == false)*/
                 {
-                    StartCoroutine(TogglePanel());
+                    //Here, get the position from Player 1.
+                    //transform.position = Vector3.Lerp(transform.position, ballPosition, Time.deltaTime * 20);
                 }
-                //Here, get the position from Player 1.
-                //transform.position = Vector3.Lerp(transform.position, ballPosition, Time.deltaTime * 20);
             }
         }
 
@@ -128,19 +123,6 @@ namespace Mirror
                 rb.AddForce(collider.transform.right * Random.Range(0,10));
             }
             */
-        }
-
-
-
-        IEnumerator TogglePanel()
-        {
-            //if (!isServer) yield break;
-
-            yield return new WaitForSeconds(2);
-            waitingScreen.SetActive(false);
-            yield return new WaitForSeconds(2);
-            isPanelOff = false;
-            StopCoroutine(TogglePanel());
         }
     }
 }

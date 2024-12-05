@@ -4,20 +4,48 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-namespace Mirror.Examples.Pong
+namespace Mirror
 {
     public class GameLauncher : MonoBehaviour
     {
         public GameObject gameManager;
-        public GameObject otherPlayerPausedScreen;
+
         
+        public GameObject otherPlayerPausedScreen;
+        public GameObject waitingScreen;
+
         bool serverActive;
         string networkType;
 
         private IEnumerator coroutine;
 
+        bool isPanelOff;
+
+
         void Update()
         {
+            if (NetworkServer.active)
+            {
+                if (Foosball_NetworkManager.Instance.startNetworkType == "Host")
+                {
+                    if (NetworkManager.singleton.GetComponent<Foosball_NetworkManager>().numPlayers == 2)
+                    {
+                        print("there are 2 players now, and I'm the host! Let's start the game.");
+                        StartCoroutine(TogglePanel());
+                    }
+                }
+                else /*if(Foosball_NetworkManager.Instance.isHost == false)*/
+                {
+                    if (!isPanelOff && waitingScreen.activeSelf)
+                    {
+                        print("there are 2 players now, and I'm the client! Let's start the game.");
+                        StartCoroutine(TogglePanel());
+                    }
+                }
+            }
+
+
+
             //serverActive = Foosball_NetworkManager.Instance.serverActive;
             networkType = Foosball_NetworkManager.Instance.startNetworkType;
 
@@ -38,8 +66,8 @@ namespace Mirror.Examples.Pong
                 {
                     //if(serverActive)
                     //{
+                    print("starting network client...");
                     Foosball_NetworkManager.Instance.StartClient();
-                        print("client!");
                     //}
                     /*
                     else
@@ -52,7 +80,6 @@ namespace Mirror.Examples.Pong
                 }
             }
         }
-
 
 
 
@@ -84,6 +111,19 @@ namespace Mirror.Examples.Pong
             yield return new WaitForSeconds(0.1f);
             print("I waited 1 second!");
             Foosball_NetworkManager.Instance.StartNewHost();
+        }
+
+
+
+        IEnumerator TogglePanel()
+        {
+            //if (!isServer) yield break;
+
+            yield return new WaitForSeconds(2);
+            waitingScreen.SetActive(false);
+            yield return new WaitForSeconds(2);
+            isPanelOff = false;
+            StopCoroutine(TogglePanel());
         }
     }
 }

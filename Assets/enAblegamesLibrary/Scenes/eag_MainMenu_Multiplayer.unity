@@ -782,7 +782,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.29898357, g: 0.33617708, b: 0.5147059, a: 0}
+  m_BackGroundColor: {r: 1, g: 1, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -957,18 +957,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 316260184}
   m_CullTransparentMesh: 0
---- !u!114 &395642214 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6875974490142901534, guid: 4ebf117908491f74698ff34cf3506fb7,
-    type: 3}
-  m_PrefabInstance: {fileID: 6875974490485457016}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bd5a587af7406d478c3d1a5ee07549d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &395642217 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6875974490142901521, guid: 4ebf117908491f74698ff34cf3506fb7,
@@ -3854,19 +3842,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 395642214}
-        m_TargetAssemblyTypeName: Mirror.Examples.Pong.ConnectTheDotsNetworkManager,
-          Assembly-CSharp
-        m_MethodName: SetHost
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
 --- !u!114 &1228670691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5231,7 +5206,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1762011222}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 

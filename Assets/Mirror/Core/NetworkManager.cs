@@ -144,6 +144,9 @@ namespace Mirror
         //    during FinishLoadScene.
         public NetworkManagerMode mode { get; private set; }
 
+        public float debugTestNumberForSingleton = 0;
+
+
         // virtual so that inheriting classes' OnValidate() can call base.OnValidate() too
         public virtual void OnValidate()
         {
@@ -380,6 +383,8 @@ namespace Mirror
 
             OnStartClient();
         }
+
+
 
         /// <summary>Starts the client, connects it to the server via Uri</summary>
         public void StartClient(Uri uri)
@@ -648,14 +653,25 @@ namespace Mirror
 
         bool InitializeSingleton()
         {
-            if (singleton != null && singleton == this)
+            Debug.LogWarning($"NetworkManager is initializing singieton.  The name of this gameObject is {gameObject.name} and my script ID is {GetInstanceID()}");
+            if(singleton == null)
+            {
+                Debug.LogWarning($"I am number {debugTestNumberForSingleton}. There was no NetworkManager detected, so I am the NetworkManager.");
+                singleton = this;
                 return true;
+            }
+
+            if (singleton != null && singleton == this)
+            {
+                Debug.LogWarning($"there was a NetworkManager detected, and it was me, {debugTestNumberForSingleton}.");
+                return true;
+            }
 
             if (dontDestroyOnLoad)
             {
-                if (singleton != null)
+                if (singleton != null && singleton != this)
                 {
-                    Debug.LogWarning("Multiple NetworkManagers detected in the scene. Only one NetworkManager can exist at a time. The duplicate NetworkManager will be destroyed.");
+                    Debug.LogWarning($"I am {debugTestNumberForSingleton}. Multiple NetworkManagers detected in the scene.  The singleton is numbered {singleton.debugTestNumberForSingleton}. Only one NetworkManager can exist at a time. The duplicate NetworkManager will be destroyed.");
                     Destroy(gameObject);
 
                     // Return false to not allow collision-destroyed second instance to continue.

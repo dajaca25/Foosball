@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 6875974490142901532}
   - component: {fileID: 6875974490142901521}
   - component: {fileID: 6875974490142901520}
-  - component: {fileID: 6875974490142901522}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -60,18 +59,21 @@ MonoBehaviour:
   networkAddress: localhost
   maxConnections: 100
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 0}
+  playerPrefab: {fileID: 1240244544407914, guid: 966404a3d853c44489ccfbd8e35c04d2,
+    type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs: []
   timeInterpolationGui: 0
+  debugTestNumberForSingleton: 0
+  levelFinish: 0
+  ball: {fileID: 0}
   player1Input: 0
   player2Input: 0
-  isHost: 0
-  startNetworkType: 
   player1: {fileID: 0}
   player2: {fileID: 0}
   playerController: {fileID: 0}
+  startNetworkType: 
   player1Paused: 0
   player2Paused: 0
 --- !u!114 &6875974490142901533
@@ -163,31 +165,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkDiscovery: {fileID: 6875974490142901521}
---- !u!114 &6875974490142901522
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6875974490142901531}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8aab4c8111b7c411b9b92cf3dbc5bd4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dontDestroyOnLoad: 1
-  runInBackground: 1
-  autoStartServerBuild: 1
-  autoConnectClientBuild: 0
-  sendRate: 30
-  offlineScene: 
-  onlineScene: 
-  transport: {fileID: 0}
-  networkAddress: localhost
-  maxConnections: 100
-  authenticator: {fileID: 0}
-  playerPrefab: {fileID: 0}
-  autoCreatePlayer: 1
-  playerSpawnMethod: 0
-  spawnPrefabs: []
-  timeInterpolationGui: 0

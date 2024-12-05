@@ -12,35 +12,92 @@ namespace Mirror
     // spawning players. The built in RoundRobin spawn method wouldn't work after
     // someone reconnects (both players would be on the same side).
     [AddComponentMenu("")]
+
     public class Foosball_NetworkManager : NetworkManager
     {
-        //public Transform leftRacketSpawn;
-        //public Transform rightRacketSpawn;
-        GameObject ball;
+        public static Foosball_NetworkManager _instance;
+
+        public bool levelFinish = false;
+
+        public GameObject ball;
 
         public float player1Input;
         public float player2Input;
 
-        public bool isHost = false;
-
-        //Accessed by the "GameLauncher" script.
-        public string startNetworkType;
-        public static Foosball_NetworkManager Instance;
-
         public GameObject player1;
         public GameObject player2;
         public GameObject playerController;
+
+        //Accessed by the "GameLauncher" script.
+        public string startNetworkType;
 
         public bool player1Paused;
         public bool player2Paused;
 
 
 
+        public override void OnServerAddPlayer(NetworkConnectionToClient conn)
+        {
+            // add player at correct spawn position
+            string controlOrientation = numPlayers == 0 ? "Horizontal" : "Vertical";
+            GameObject player = Instantiate(playerPrefab, this.transform.position, this.transform.rotation);
+            player.GetComponent<Player>().controlDirection = controlOrientation;
+
+            //Set the player1 and player2 object variables in this script.
+            if (player.GetComponent<Player>().controlDirection == "Horizontal")
+            {
+                player1 = player;
+            }
+            if (player.GetComponent<Player>().controlDirection == "Vertical")
+            {
+                player2 = player;
+            }
+
+            NetworkServer.AddPlayerForConnection(conn, player);
+
+            print("numPlayers: " + numPlayers);
+
+            // spawn ball if two players
+            if (numPlayers == 2)
+            {
+                //ball = Instantiate(spawnPrefabs.Find(prefab => prefab.name == "Ball"));
+                //NetworkServer.Spawn(ball);
+            }
+        }
+
+
+
+        public void SetNetworkType(string newType)
+        {
+            startNetworkType = newType;
+        }
+
+
+        
+        public static Foosball_NetworkManager Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindObjectOfType<Foosball_NetworkManager>();
+                    if (_instance == null)
+                    {
+                        // still no GameManager present, raise awareness:
+                        Debug.LogError("An instance of type Foosball_NetworkManager is needed in the scene, but there is none!");
+                    }
+                }
+                return _instance;
+            }
+        }
+        
+
+        
         private void Awake()
         {
             if (Instance == null)
             {
-                Instance = FindObjectOfType<Foosball_NetworkManager>();
+                _instance = FindObjectOfType<Foosball_NetworkManager>();
             }
             if(this == Instance)
                 DontDestroyOnLoad(Instance);
@@ -49,64 +106,23 @@ namespace Mirror
                 Destroy(this.gameObject);
             }
         }
-
+        
 
 
         public void FixedUpdate()
         {
             if (player1 != null)
             {
-                //player1Input = player1.GetComponent<Player>().horizontalInput;
-                print("player1Input: " + player1Input);
+                player1Input = player1.GetComponent<Player>().horizontalInput;
+                print("horizontalInput: " + player1Input);
             }
             if (player2 != null)
             {
-                //player2Input = player2.GetComponent<Player>().verticalInput;
-                print("player2Input: " + player2Input);
+                player2Input = player2.GetComponent<Player>().verticalInput;
+                print("verticalInput: " + player2Input);
             }
         }
 
-
-
-        public void SetHost(bool host)
-        {
-            isHost = host;
-        }
-        
-
-
-        public override void OnServerAddPlayer(NetworkConnectionToClient conn)
-        {
-            Debug.Log("Player Joined");
-            // add player at correct spawn position
-            //Transform start = numPlayers == 0 ? leftRacketSpawn : rightRacketSpawn;
-            GameObject player = Instantiate(playerPrefab, Vector3.zero, quaternion.identity);
-            NetworkServer.AddPlayerForConnection(conn, player);
-
-            // spawn ball if two players
-            if (numPlayers == 2)
-            {
-                // ball = Instantiate(spawnPrefabs.Find(prefab => prefab.name == "Ball"));
-                // NetworkServer.Spawn(ball);
-            }
-        }
-
-
-
-        public GameObject SpawnStars(Vector3 position, Transform parent)
-        {
-            GameObject newStar = Instantiate(spawnPrefabs[0], position, quaternion.identity, parent);
-            NetworkServer.Spawn(newStar);
-            return newStar;
-        }
-        
-
-
-        public void SetNetworkType(string newType)
-        {
-            startNetworkType = newType;
-        }
-        
 
 
         public override void OnServerDisconnect(NetworkConnectionToClient conn)
@@ -123,8 +139,11 @@ namespace Mirror
 
         public void StartNewHost()
         {
-            print("start host check 1");
-            StartHost();
+            //if (!serverActive)
+            //{
+            print("starting network host...");
+                StartHost();
+            //}
         }
     }
 }
